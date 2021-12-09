@@ -47,7 +47,6 @@ def main_1():
         for row in f.readlines():
             floor.append([int(c) for c in row.strip()])
         minimums = []
-        is_minimum(9, 1, floor)
         for y in range(len(floor)):
             for x in range(len(floor[0])):
                 if is_minimum(x, y, floor):
