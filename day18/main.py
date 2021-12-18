@@ -2,30 +2,35 @@ from typing import List, Optional
 
 
 def explode(numbers, level=1):
-    exploded = False
+    exploded_left = [0, 0]
+    exploded_right = [0, 0]
     [left, right] = numbers
 
-    if (
-        level >= 4
-        and isinstance(left, list)
-        and isinstance(left[0], int)
-        and isinstance(left[1], int)
-    ):
-        return [0, right + left[1]], True
-    elif (
-        level >= 4
-        and isinstance(right, list)
-        and isinstance(right[0], int)
-        and isinstance(right[1], int)
-    ):
-        return [right[0] + left, 0], True
+    if level > 4 and isinstance(left, int) and isinstance(right, int):
+        return 0, numbers
 
     if isinstance(left, list):
-        left, exploded = explode(left, level + 1)
+        left, exploded_left = explode(left, level + 1)
     if isinstance(right, list):
-        right, exploded = explode(right, level + 1)
+        if exploded_left[1]:
+            right[0] += exploded_left[1]
+            exploded_left[1] = 0
+        else:
+            right, exploded_right = explode(right, level + 1)
 
-    return [left, right], exploded
+    rest = [
+        exploded_left[0] + exploded_right[0],
+        exploded_left[1] + exploded_right[1],
+    ]
+
+    if isinstance(numbers[0], int) and rest[0]:
+        left = left + rest[0]
+        rest[0] = 0
+    if isinstance(numbers[1], int) and rest[1]:
+        right = right + rest[1]
+        rest[1] = 0
+
+    return [left, right], rest
 
 
 def split(numbers):
