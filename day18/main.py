@@ -36,18 +36,20 @@ def explode(numbers, level=1):
 def split(numbers):
     """Only split the left most"""
     [left, right] = numbers
-
-    if isinstance(left, int) and left >= 10:
+    done = False
+    if isinstance(left, int) and left >= 10 and not done:
         left = [left // 2, -(-left // 2)]
-    elif isinstance(left, list):
-        left = split(left)
+        done = True
+    elif isinstance(left, list) and not done:
+        left, done = split(left)
 
-    if isinstance(right, int) and right >= 10:
+    if isinstance(right, int) and right >= 10 and not done:
         right = [right // 2, -(-right // 2)]
-    elif isinstance(right, list):
-        right = split(right)
+        done = True
+    elif isinstance(right, list) and not done:
+        right, done = split(right)
 
-    return [left, right]
+    return [left, right], done
 
 
 def numbers_depth(numbers):

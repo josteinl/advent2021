@@ -36,9 +36,9 @@ def test_split():
     assert numbers == [[[[0, 7], 4], [7, [[8, 4], 9]]], [1, 1]]
     numbers, _ = explode(numbers)
     assert numbers == [[[[0, 7], 4], [15, [0, 13]]], [1, 1]]
-    numbers = split(numbers)
+    numbers, _ = split(numbers)
     assert numbers == [[[[0, 7], 4], [[7, 8], [0, 13]]], [1, 1]]
-    numbers = split(numbers)
+    numbers, _ = split(numbers)
     assert numbers == [[[[0, 7], 4], [[7, 8], [0, [6, 7]]]], [1, 1]]
     numbers, _ = explode(numbers)
     assert numbers == [[[[0, 7], 4], [[7, 8], [6, 0]]], [8, 1]]
