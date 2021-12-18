@@ -15,7 +15,7 @@ def explode(numbers, level=1):
         if exploded_left[1]:
             right[0] += exploded_left[1]
             exploded_left[1] = 0
-        else:
+        elif exploded_left == [0, 0]:
             right, exploded_right = explode(right, level + 1)
 
     rest = [

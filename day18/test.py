@@ -1,6 +1,6 @@
 import pytest
 
-from main import explode
+from main import explode, split
 
 
 @pytest.mark.parametrize(
@@ -22,3 +22,23 @@ from main import explode
 def test_explode(numbers, exploded):
     result, _ = explode(numbers)
     assert result == exploded
+
+
+def test_split():
+    # after addition: [[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]
+    # after explode:  [[[[0,7],4],[7,[[8,4],9]]],[1,1]]
+    # after explode:  [[[[0,7],4],[15,[0,13]]],[1,1]]
+    # after split:    [[[[0,7],4],[[7,8],[0,13]]],[1,1]]
+    # after split:    [[[[0,7],4],[[7,8],[0,[6,7]]]],[1,1]]
+    # after explode:  [[[[0,7],4],[[7,8],[6,0]]],[8,1]]
+    numbers = [[[[[4, 3], 4], 4], [7, [[8, 4], 9]]], [1, 1]]
+    numbers, _ = explode(numbers)
+    assert numbers == [[[[0, 7], 4], [7, [[8, 4], 9]]], [1, 1]]
+    numbers, _ = explode(numbers)
+    assert numbers == [[[[0, 7], 4], [15, [0, 13]]], [1, 1]]
+    numbers = split(numbers)
+    assert numbers == [[[[0, 7], 4], [[7, 8], [0, 13]]], [1, 1]]
+    numbers = split(numbers)
+    assert numbers == [[[[0, 7], 4], [[7, 8], [0, [6, 7]]]], [1, 1]]
+    numbers, _ = explode(numbers)
+    assert numbers == [[[[0, 7], 4], [[7, 8], [6, 0]]], [8, 1]]
