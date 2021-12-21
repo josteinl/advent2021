@@ -5,8 +5,9 @@ def add_number_to_last(numbers: str, first: int):
     found_digit = False
     for i, char in enumerate(numbers[::-1]):
         if char.isdigit():
+            if not found_digit:
+                end_digit = i
             found_digit = True
-            end_digit = i
         elif found_digit:
             start_digit = i
             number = int(numbers[-start_digit:-end_digit])
@@ -18,24 +19,24 @@ def add_number_to_last(numbers: str, first: int):
 
 
 def add_number_to_first(numbers: str, second: int):
-    number = 0
-    factor = 1
     found_digit = False
+    start_digit = None
     for i, char in enumerate(numbers):
         if char.isdigit():
+            if not found_digit:
+                start_digit = i
             found_digit = True
-            start_digit = i
-            number += int(char) * factor
-            factor *= 10
         elif found_digit:
             end_digit = i
+            number = int(numbers[start_digit:end_digit])
             new_number = number + second
             return numbers[:start_digit] + str(new_number) + numbers[end_digit:]
 
     return numbers
 
 
-def explode(numbers: str):
+def explode(numbers: List):
+    numbers = repr(numbers).replace(" ", "")
 
     depth = 0
     for i, char in enumerate(numbers):
@@ -59,11 +60,12 @@ def explode(numbers: str):
             first = int(numbers[i + 1 : comma + 1])
             second = int(numbers[comma + 2 : end + 1])
 
-            return (
+            return eval(
                 add_number_to_last(numbers[:i], first)
                 + "0"
                 + add_number_to_first(numbers[end + 2 :], second)
             )
+    return numbers
 
 
 def split(numbers):
@@ -86,17 +88,32 @@ def split(numbers):
     return [left, right], done
 
 
-def numbers_depth(numbers):
-    max_depth = 0
-    depth = 0
-    for char in numbers:
-        if char == "[":
-            depth += 1
-        elif char == "]":
-            depth -= 1
-        max_depth = max(max_depth, depth)
+def numbers_depth(numbers: List):
+    if isinstance(numbers[0], int):
+        depth_left = 1
+    else:
+        depth_left = numbers_depth(numbers[0]) + 1
 
-    return max_depth
+    if isinstance(numbers[1], int):
+        depth_right = 1
+    else:
+        depth_right = numbers_depth(numbers[1]) + 1
+
+    return max(depth_left, depth_right)
+
+
+# def numbers_depth(numbers:List):
+#     numbers = repr(numbers).replace(" ", "")
+#     max_depth = 0
+#     depth = 0
+#     for char in numbers:
+#         if char == "[":
+#             depth += 1
+#         elif char == "]":
+#             depth -= 1
+#         max_depth = max(max_depth, depth)
+#
+#     return max_depth
 
 
 def reduce_numbers(numbers):
@@ -107,7 +124,7 @@ def reduce_numbers(numbers):
     while True:
         depth = numbers_depth(numbers)
         # print(f"{depth=}")
-        if depth >= 4:
+        if depth > 4:
             print(f"explode()")
             numbers = explode(numbers)
         else:
@@ -125,7 +142,7 @@ def reduce_numbers(numbers):
 
 
 def add_numbers(numbers, row):
-    numbers = f"[{numbers}{row}]"
+    numbers = [numbers, row]
     print(f"Add numbers:")
     print(f"{numbers=}")
     numbers = reduce_numbers(numbers)
@@ -136,7 +153,7 @@ def main_1():
     with open("test_data.txt") as f:
         numbers = None
         for row in f.readlines():
-            row = row.strip()
+            row = eval(row)
             if not numbers:
                 numbers = row
                 print(f"Start :{numbers}")
