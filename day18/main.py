@@ -1,42 +1,49 @@
-from typing import List, Optional
+from typing import List, Union, Tuple
 
 
-def explode(numbers, level=1):
-    exploded_left = [0, 0]
-    exploded_right = [0, 0]
+def explode(
+    numbers: list, rest_left: int, rest_right: int, done: bool, level: int = 1
+) -> Tuple[Union[List, int], int, int, bool]:
+
     [left, right] = numbers
 
-    if level > 4 and isinstance(left, int) and isinstance(right, int):
-        return 0, numbers
+    if not done and level > 4 and isinstance(left, int) and isinstance(right, int):
+        return 0, left, right, True
+
+    if rest_right:
+        if isinstance(left, int):
+            left += rest_right
+            rest_right = 0
+
+    if rest_left:
+        if isinstance(right, int):
+            right += rest_left
+            rest_left = 0
 
     if isinstance(left, list):
-        left, exploded_left = explode(left, level + 1)
-    if isinstance(right, list):
-        if exploded_left[1]:
-            right[0] += exploded_left[1]
-            exploded_left[1] = 0
-        elif exploded_left == [0, 0]:
-            right, exploded_right = explode(right, level + 1)
+        left, rest_left, rest_right, done = explode(
+            left, rest_left, rest_right, done=done, level=level + 1
+        )
 
-    rest = [
-        exploded_left[0] + exploded_right[0],
-        exploded_left[1] + exploded_right[1],
-    ]
+    # if exploded just now (int now, was list) only pass right rest
+    if isinstance(left, int) and isinstance(numbers[0], list):
+        right, _, rest_right, done = explode(
+            right, 0, rest_right, done=done, level=level + 1
+        )
+    else:
+        if isinstance(right, list):
+            right, rest_left, _, done = explode(
+                right, rest_left, 0, done=done, level=level + 1
+            )
 
-    if isinstance(numbers[0], int) and rest[0]:
-        left = left + rest[0]
-        rest[0] = 0
-    if isinstance(numbers[1], int) and rest[1]:
-        right = right + rest[1]
-        rest[1] = 0
-
-    return [left, right], rest
+    return [left, right], rest_left, rest_right, done
 
 
 def split(numbers):
     """Only split the left most"""
     [left, right] = numbers
     done = False
+
     if isinstance(left, int) and left >= 10 and not done:
         left = [left // 2, -(-left // 2)]
         done = True
@@ -70,18 +77,20 @@ def reduce_numbers(numbers):
     """reduce a snailfish number"""
 
     # find if we should do
-    last_numbers = None
+    last_numbers = []
     while True:
         depth = numbers_depth(numbers)
-        print(f"{depth=}")
-        if depth > 4:
-            f = explode
+        # print(f"{depth=}")
+        if depth >= 4:
+            print(f"explode()")
+            numbers, _, _ = explode(numbers, rest=[0, 0], done=False)
         else:
-            f = split
-        # explode if there are four/five nested numbers
-        # otherwise, split
+            print(f"split()")
+            numbers, _ = split(numbers)
 
-        numbers = f(numbers)
+        print(
+            f"{numbers=} len:{len(repr(numbers))} diff={-len(repr(last_numbers)) + len(repr(numbers))}"
+        )
         if numbers == last_numbers:
             break
         last_numbers = numbers
@@ -91,6 +100,8 @@ def reduce_numbers(numbers):
 
 def add_numbers(numbers, row):
     numbers = [numbers, row]
+    print(f"Add numbers:")
+    print(f"{numbers=}")
     numbers = reduce_numbers(numbers)
     return numbers
 
@@ -102,9 +113,11 @@ def main_1():
             row = eval(row)
             if not numbers:
                 numbers = row
+                print(f"Start :{numbers}")
             else:
+                print(f"Add   :{row}")
                 numbers = add_numbers(numbers, row)
-            print(f"{numbers}")
+                print(f"Result:{numbers}")
 
         print(f"{numbers}")
 
