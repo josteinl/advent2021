@@ -1,42 +1,69 @@
 from typing import List, Union, Tuple
 
 
-def explode(
-    numbers: list, rest_left: int, rest_right: int, done: bool, level: int = 1
-) -> Tuple[Union[List, int], int, int, bool]:
+def add_number_to_last(numbers: str, first: int):
+    found_digit = False
+    for i, char in enumerate(numbers[::-1]):
+        if char.isdigit():
+            found_digit = True
+            end_digit = i
+        elif found_digit:
+            start_digit = i
+            number = int(numbers[-start_digit:-end_digit])
+            new_number = number + first
 
-    [left, right] = numbers
+            return numbers[:-start_digit] + str(new_number) + numbers[-end_digit:]
 
-    if not done and level > 4 and isinstance(left, int) and isinstance(right, int):
-        return 0, left, right, True
+    return numbers
 
-    if rest_right:
-        if isinstance(left, int):
-            left += rest_right
-            rest_right = 0
 
-    if rest_left:
-        if isinstance(right, int):
-            right += rest_left
-            rest_left = 0
+def add_number_to_first(numbers: str, second: int):
+    number = 0
+    factor = 1
+    found_digit = False
+    for i, char in enumerate(numbers):
+        if char.isdigit():
+            found_digit = True
+            start_digit = i
+            number += int(char) * factor
+            factor *= 10
+        elif found_digit:
+            end_digit = i
+            new_number = number + second
+            return numbers[:start_digit] + str(new_number) + numbers[end_digit:]
 
-    if isinstance(left, list):
-        left, rest_left, rest_right, done = explode(
-            left, rest_left, rest_right, done=done, level=level + 1
-        )
+    return numbers
 
-    # if exploded just now (int now, was list) only pass right rest
-    if isinstance(left, int) and isinstance(numbers[0], list):
-        right, _, rest_right, done = explode(
-            right, 0, rest_right, done=done, level=level + 1
-        )
-    else:
-        if isinstance(right, list):
-            right, rest_left, _, done = explode(
-                right, rest_left, 0, done=done, level=level + 1
+
+def explode(numbers: str):
+
+    depth = 0
+    for i, char in enumerate(numbers):
+        if char == "[":
+            depth += 1
+        elif char == "]":
+            depth -= 1
+
+        if depth > 4 and char == "[":
+            # Extract the numbers
+            comma = numbers[i + 1 :].index(",") + i
+            end = numbers[i + 1 :].index("]") + i
+            try:
+                next = numbers[i + 1 :].index("[") + i
+            except ValueError:
+                next = end
+            if next < end:
+                # Not a pair (but nested)
+                print("not a pair")
+                continue
+            first = int(numbers[i + 1 : comma + 1])
+            second = int(numbers[comma + 2 : end + 1])
+
+            return (
+                add_number_to_last(numbers[:i], first)
+                + "0"
+                + add_number_to_first(numbers[end + 2 :], second)
             )
-
-    return [left, right], rest_left, rest_right, done
 
 
 def split(numbers):
@@ -60,17 +87,16 @@ def split(numbers):
 
 
 def numbers_depth(numbers):
-    if isinstance(numbers[0], int):
-        depth_left = 0
-    else:
-        depth_left = numbers_depth(numbers[0]) + 1
+    max_depth = 0
+    depth = 0
+    for char in numbers:
+        if char == "[":
+            depth += 1
+        elif char == "]":
+            depth -= 1
+        max_depth = max(max_depth, depth)
 
-    if isinstance(numbers[1], int):
-        depth_right = 0
-    else:
-        depth_right = numbers_depth(numbers[1]) + 1
-
-    return max(depth_left, depth_right)
+    return max_depth
 
 
 def reduce_numbers(numbers):
@@ -83,7 +109,7 @@ def reduce_numbers(numbers):
         # print(f"{depth=}")
         if depth >= 4:
             print(f"explode()")
-            numbers, _, _ = explode(numbers, rest=[0, 0], done=False)
+            numbers = explode(numbers)
         else:
             print(f"split()")
             numbers, _ = split(numbers)
@@ -99,7 +125,7 @@ def reduce_numbers(numbers):
 
 
 def add_numbers(numbers, row):
-    numbers = [numbers, row]
+    numbers = f"[{numbers}{row}]"
     print(f"Add numbers:")
     print(f"{numbers=}")
     numbers = reduce_numbers(numbers)
@@ -110,7 +136,7 @@ def main_1():
     with open("test_data.txt") as f:
         numbers = None
         for row in f.readlines():
-            row = eval(row)
+            row = row.strip()
             if not numbers:
                 numbers = row
                 print(f"Start :{numbers}")
