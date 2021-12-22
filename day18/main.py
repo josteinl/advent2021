@@ -1,4 +1,5 @@
 from typing import List, Union, Tuple
+from itertools import permutations
 
 
 def add_number_to_last(numbers: str, first: int):
@@ -167,11 +168,21 @@ def main_1():
 
 
 def main_2():
-    with open("test_data.txt") as f:
-        numbers = None
+    with open("data.txt") as f:
+        numbers = []
         for row in f.readlines():
-            row = eval(row)
+            numbers.append(eval(row))
+
+        max_sum = 0
+        for number_one, number_two in permutations(numbers, r=2):
+            # print(f"{number_one=}")
+            max_sum = max(
+                calculate_magnitude(add_numbers(number_one, number_two)), max_sum
+            )
+
+        print(f"{max_sum=}")
 
 
 if __name__ == "__main__":
-    main_1()
+    # main_1()
+    main_2()
