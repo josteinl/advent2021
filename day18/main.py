@@ -55,7 +55,7 @@ def explode(numbers: List):
                 next = end
             if next < end:
                 # Not a pair (but nested)
-                print("not a pair")
+                # print("not a pair")
                 continue
             first = int(numbers[i + 1 : comma + 1])
             second = int(numbers[comma + 2 : end + 1])
@@ -102,18 +102,19 @@ def numbers_depth(numbers: List):
     return max(depth_left, depth_right)
 
 
-# def numbers_depth(numbers:List):
-#     numbers = repr(numbers).replace(" ", "")
-#     max_depth = 0
-#     depth = 0
-#     for char in numbers:
-#         if char == "[":
-#             depth += 1
-#         elif char == "]":
-#             depth -= 1
-#         max_depth = max(max_depth, depth)
-#
-#     return max_depth
+def calculate_magnitude(number):
+
+    left, right = number
+    if isinstance(left, int) and isinstance(right, int):
+        return 3 * left + 2 * right
+
+    if isinstance(left, int) and isinstance(right, list):
+        return 3 * left + 2 * calculate_magnitude(right)
+
+    if isinstance(left, list) and isinstance(right, int):
+        return 3 * calculate_magnitude(left) + 2 * right
+
+    return 3 * calculate_magnitude(left) + 2 * calculate_magnitude(right)
 
 
 def reduce_numbers(numbers):
@@ -125,15 +126,15 @@ def reduce_numbers(numbers):
         depth = numbers_depth(numbers)
         # print(f"{depth=}")
         if depth > 4:
-            print(f"explode()")
+            # print(f"explode()")
             numbers = explode(numbers)
         else:
-            print(f"split()")
+            # print(f"split()")
             numbers, _ = split(numbers)
 
-        print(
-            f"{numbers=} len:{len(repr(numbers))} diff={-len(repr(last_numbers)) + len(repr(numbers))}"
-        )
+        # print(
+        #     f"{numbers=} len:{len(repr(numbers))} diff={-len(repr(last_numbers)) + len(repr(numbers))}"
+        # )
         if numbers == last_numbers:
             break
         last_numbers = numbers
@@ -143,8 +144,8 @@ def reduce_numbers(numbers):
 
 def add_numbers(numbers, row):
     numbers = [numbers, row]
-    print(f"Add numbers:")
-    print(f"{numbers=}")
+    # print(f"Add numbers:")
+    # print(f"{numbers=}")
     numbers = reduce_numbers(numbers)
     return numbers
 
@@ -162,7 +163,14 @@ def main_1():
                 numbers = add_numbers(numbers, row)
                 print(f"Result:{numbers}")
 
-        print(f"{numbers}")
+        print(f"{calculate_magnitude(numbers)}")
+
+
+def main_2():
+    with open("test_data.txt") as f:
+        numbers = None
+        for row in f.readlines():
+            row = eval(row)
 
 
 if __name__ == "__main__":
