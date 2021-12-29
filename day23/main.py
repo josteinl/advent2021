@@ -146,7 +146,7 @@ class Board:
                 amphipod = char_class_mapping[char](x, y)
                 self.pieces.append(amphipod)
 
-        self.pieces.sort(key=lambda x: x.character)
+        # self.pieces.sort(key=lambda x: x.character)
 
     def board_state(self) -> frozenset:
         return frozenset([(piece.character, piece.x, piece.y) for piece in self.pieces])
@@ -158,10 +158,10 @@ class Board:
         return board
 
     def possible_moves(self):
+        "New possible moves, read the rules again, and it is not allowed to move in the hallway!"
         result = []
         for i, piece in enumerate(self.pieces):
-            # print(f"{piece}")
-            # if in inner target room, skip, because target is reached
+            # if current piece in inner target room, skip, because target is reached
             if (piece.x, piece.y) == piece.targets[INNER_ROOM]:
                 continue
 
@@ -172,9 +172,6 @@ class Board:
                 continue
 
             for target in piece.allowed_position:
-                # stand still, not a move # Caught on next case below (occupied):
-                # if target == (piece.x, piece.y):
-                #     continue
                 # Target occupied
                 if self.rows[target[Y]][target[X]] != ".":
                     continue
@@ -184,6 +181,11 @@ class Board:
                     and self.rows[piece.targets[INNER_ROOM][Y]][piece.targets[INNER_ROOM][X]] != piece.character
                 ):
                     continue
+
+                # If both target.y and piece.y == 1, it is not allowed to move in the hallway, only move in and out
+                if target[Y] == 1 == piece.y:
+                    continue
+
                 # Try to go the way
                 steps = self.step((piece.x, piece.y), target)
                 if not steps:
@@ -194,11 +196,14 @@ class Board:
 
         return result
 
-    def move(self, pice_index: int, move_to):
-        pice = self.pieces[pice_index]
-        self.rows[pice.y] = self.rows[pice.y][: pice.x] + "." + self.rows[pice.y][pice.x + 1 :]
-        pice.x, pice.y = move_to
-        self.rows[pice.y] = self.rows[pice.y][: pice.x] + pice.character + self.rows[pice.y][pice.x + 1 :]
+    def move(self, piece_index: int, move_to):
+        piece = self.pieces[piece_index]
+        self.rows[piece.y] = self.rows[piece.y][: piece.x] + "." + self.rows[piece.y][piece.x + 1 :]
+        piece.x, piece.y = move_to
+        self.rows[piece.y] = self.rows[piece.y][: piece.x] + piece.character + self.rows[piece.y][piece.x + 1 :]
+        # # When piece in final position, then remove it from self.piece (faster future lookup and smaller board state)
+        # if (piece.x, piece.y) in self.pieces.targets:
+        #     del self.pieces[piece_index]
 
     def step(self, from_position, to_position):
         """Cases.
@@ -255,13 +260,15 @@ def solve(board: Board, cost_so_far: int, level=0) -> Optional[int]:
     """
     global minimum_solution_cost
 
-    if level > 8:
-        return None
+    # if level > 8:
+    #     return None
 
     if minimum_solution_cost is not None and cost_so_far >= minimum_solution_cost:
+        # print(f"{cost_so_far=} >= {minimum_solution_cost=}, abort branch")
         return None
 
     if all([pice.is_final_posision() for pice in board.pieces]):
+        print(f"{'==' * 20}")
         print(f"Found solution for")
         print(f"{level=} {cost_so_far=} {minimum_solution_cost=}:")
         print(f"{board!r}")
@@ -269,7 +276,7 @@ def solve(board: Board, cost_so_far: int, level=0) -> Optional[int]:
         return cost_so_far
 
     if board.board_state() in board.seen:
-        # print(f"Seen before!")
+        # print(f"Above seen before. Ignore branch!")
         return None
 
     board.seen.add(board.board_state())
@@ -279,10 +286,13 @@ def solve(board: Board, cost_so_far: int, level=0) -> Optional[int]:
     for piece_index, move_to, move_cost in possible_moves:
         new_board = deepcopy(board)
         new_board.move(piece_index, move_to)
-        if level == 0:
-            print(f"{level=} {cost_so_far=} {minimum_solution_cost=}:")
-            print(f"{new_board!r}")
-            print(f"{'--'*20}")
+        # if level == 0:
+        # print(f"{'--'*20}")
+        # print(f"{level=} {cost_so_far=} {minimum_solution_cost=}:")
+        # print(
+        #     f"move {board.pieces[piece_index].character} ({board.pieces[piece_index].x}, {board.pieces[piece_index].y}) -> {move_to!r}"
+        # )
+        # print(f"{new_board!r}")
         total_cost = solve(new_board, cost_so_far + move_cost, level=level + 1)
         if total_cost is not None:
             if minimum_solution_cost is None:
@@ -300,10 +310,10 @@ def solve(board: Board, cost_so_far: int, level=0) -> Optional[int]:
 def main_1():
 
     board = Board()
-    with open("test_data.txt") as f:
+    with open("data.txt") as f:
         for row in f.readlines():
             board.add_row(row)
-
+        # board.remove_pices_in_final_position()
         print(f"Start board:")
         print(f"{board!r}")
         print(f"***************************************")
