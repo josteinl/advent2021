@@ -3,7 +3,9 @@ from typing import Optional, List
 from copy import deepcopy
 
 # The index for inner and outer rooms
-OUTER_ROOM = 1
+OUTER_ROOM = 3
+OUTER_MIDDLE_ROOM = 2
+INNER_MIDDLE_ROOM = 1
 INNER_ROOM = 0
 X = 0
 Y = 1
@@ -44,8 +46,10 @@ class Amphipods(abc.ABC):
 class Amber(Amphipods):
     character = "A"
     cost = 1
-    targets = [(3, 3), (3, 2)]
+    targets = [(3, 5), (3, 4), (3, 3), (3, 2)]
     allowed_position = [
+        (3, 5),
+        (3, 4),
         (3, 3),
         (3, 2),
         (1, 1),
@@ -61,8 +65,10 @@ class Amber(Amphipods):
 class Bronze(Amphipods):
     character = "B"
     cost = 10
-    targets = [(5, 3), (5, 2)]
+    targets = [(5, 5), (5, 4), (5, 3), (5, 2)]
     allowed_position = [
+        (5, 5),
+        (5, 4),
         (5, 3),
         (5, 2),
         (1, 1),
@@ -78,8 +84,10 @@ class Bronze(Amphipods):
 class Copper(Amphipods):
     character = "C"
     cost = 100
-    targets = [(7, 3), (7, 2)]
+    targets = [(7, 5), (7, 4), (7, 3), (7, 2)]
     allowed_position = [
+        (7, 5),
+        (7, 4),
         (7, 3),
         (7, 2),
         (1, 1),
@@ -95,8 +103,10 @@ class Copper(Amphipods):
 class Copper(Amphipods):
     character = "C"
     cost = 100
-    targets = [(7, 3), (7, 2)]
+    targets = [(7, 5), (7, 4), (7, 3), (7, 2)]
     allowed_position = [
+        (7, 5),
+        (7, 4),
         (7, 3),
         (7, 2),
         (1, 1),
@@ -112,8 +122,10 @@ class Copper(Amphipods):
 class Desert(Amphipods):
     character = "D"
     cost = 1000
-    targets = [(9, 3), (9, 2)]
+    targets = [(9, 5), (9, 4), (9, 3), (9, 2)]
     allowed_position = [
+        (9, 5),
+        (9, 4),
         (9, 3),
         (9, 2),
         (1, 1),
@@ -160,33 +172,67 @@ class Board:
         return board
 
     def possible_moves(self):
-        "New possible moves, read the rules again, and it is not allowed to move in the hallway!"
+        """
+        New possible moves, read the rules again, and it is not allowed to move in the hallway!
+        """
         result = []
         for i, piece in enumerate(self.pieces):
+            # fmt:off
             # if current piece in inner target room, skip, because target is reached
             if (piece.x, piece.y) == piece.targets[INNER_ROOM]:
                 continue
 
-            # If current piece in outer target room, and equal target in inner final room, target reached
-            if (piece.x, piece.y) == piece.targets[OUTER_ROOM] and self.rows[piece.targets[INNER_ROOM][Y]][
-                piece.targets[INNER_ROOM][X]
-            ] == piece.character:
+            # If current piece in inner middle target room, and equal target in inner final room, target reached
+            if (piece.x, piece.y) == piece.targets[INNER_MIDDLE_ROOM] and \
+                    self.rows[piece.targets[INNER_ROOM][Y]][piece.targets[INNER_ROOM][X]] == piece.character:
                 continue
+
+            # If current piece in outer middle target room, and equal piece in inner middle and inner final room,
+            # target reached
+            if (piece.x, piece.y) == piece.targets[OUTER_MIDDLE_ROOM] and \
+                    self.rows[piece.targets[INNER_MIDDLE_ROOM][Y]][piece.targets[INNER_MIDDLE_ROOM][X]] == piece.character and \
+                    self.rows[piece.targets[INNER_ROOM][Y]][piece.targets[INNER_ROOM][X]] == piece.character:
+                continue
+
+            # If current piece in outer target room, and equal target in inner final room, target reached
+            if (piece.x, piece.y) == piece.targets[OUTER_ROOM] and \
+                    self.rows[piece.targets[OUTER_MIDDLE_ROOM][Y]][piece.targets[OUTER_MIDDLE_ROOM][X]] == piece.character and \
+                    self.rows[piece.targets[INNER_MIDDLE_ROOM][Y]][piece.targets[INNER_MIDDLE_ROOM][X]] == piece.character and \
+                    self.rows[piece.targets[INNER_ROOM][Y]][piece.targets[INNER_ROOM][X]] == piece.character:
+                continue
+            # fmt:on
 
             for target in piece.allowed_position:
                 # Target occupied
                 if self.rows[target[Y]][target[X]] != ".":
                     continue
-                # target is outer target room, but  inner target room is not occupied by correct piece:
-                if (
-                    target == piece.targets[OUTER_ROOM]
-                    and self.rows[piece.targets[INNER_ROOM][Y]][piece.targets[INNER_ROOM][X]] != piece.character
-                ):
-                    continue
 
                 # If both target.y and piece.y == 1, it is not allowed to move in the hallway, only move in and out
                 if target[Y] == 1 == piece.y:
                     continue
+
+                # fmt:off
+                # target is outer target room, but outer middle, inner middle and inner target room is not occupied by
+                # correct piece:
+                if target == piece.targets[OUTER_ROOM] and \
+                        self.rows[piece.targets[OUTER_MIDDLE_ROOM][Y]][piece.targets[OUTER_MIDDLE_ROOM][X]] != piece.character and \
+                        self.rows[piece.targets[INNER_MIDDLE_ROOM][Y]][piece.targets[INNER_MIDDLE_ROOM][X]] != piece.character and \
+                        self.rows[piece.targets[INNER_ROOM][Y]][piece.targets[INNER_ROOM][X]] != piece.character:
+                    continue
+
+                # if target is outer_middle_room
+                if target == piece.targets[OUTER_MIDDLE_ROOM] and \
+                        self.rows[piece.targets[OUTER_ROOM][Y]][piece.targets[OUTER_ROOM][X]] != '.' and \
+                        self.rows[piece.targets[INNER_MIDDLE_ROOM][Y]][piece.targets[INNER_MIDDLE_ROOM][X]] != piece.character and \
+                        self.rows[piece.targets[INNER_ROOM][Y]][piece.targets[INNER_ROOM][X]] != piece.character:
+                    continue
+
+                if target == piece.targets[INNER_MIDDLE_ROOM] and \
+                        self.rows[piece.targets[OUTER_ROOM][Y]][piece.targets[OUTER_ROOM][X]] != '.' and \
+                        self.rows[piece.targets[OUTER_MIDDLE_ROOM][Y]][piece.targets[OUTER_MIDDLE_ROOM][X]] != '.' and \
+                        self.rows[piece.targets[INNER_ROOM][Y]][piece.targets[INNER_ROOM][X]] != piece.character:
+                    continue
+                # fmt:on
 
                 # Try to go the way
                 steps = self.step((piece.x, piece.y), target)
@@ -317,7 +363,7 @@ def solve(board: Board, cost_so_far: int, level=0) -> Optional[int]:
 def main_1():
 
     board = Board()
-    with open("data.txt") as f:
+    with open("data_part2.txt") as f:
         for row in f.readlines():
             board.add_row(row)
         # board.remove_pices_in_final_position()
