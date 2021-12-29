@@ -128,6 +128,8 @@ class Desert(Amphipods):
 
 char_class_mapping = {"A": Amber, "B": Bronze, "C": Copper, "D": Desert}
 
+seen_cost = {}
+
 
 class Board:
     def __init__(self, test: bool = False):
@@ -275,11 +277,16 @@ def solve(board: Board, cost_so_far: int, level=0) -> Optional[int]:
         print(f"{'=='*20}")
         return cost_so_far
 
-    if board.board_state() in board.seen:
+    board_state = board.board_state()
+    if board_state in board.seen:
         # print(f"Above seen before. Ignore branch!")
         return None
 
-    board.seen.add(board.board_state())
+    if board_state in seen_cost.keys() and cost_so_far >= seen_cost[board_state]:
+        return None
+
+    seen_cost[board_state] = cost_so_far
+    board.seen.add(board_state)
 
     costs = []
     possible_moves = board.possible_moves()
