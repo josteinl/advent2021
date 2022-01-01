@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Set
 
 
 class Program:
@@ -25,6 +25,10 @@ class Program:
             parameter_2 = None
         else:
             parameter_2 = command[2]
+
+        if operation == "div" and parameter_2 == "1":
+            # "div x 1" is a NOP
+            return
 
         self.instructions.append((self.function_map(operation), parameter_1, parameter_2))
 
@@ -73,6 +77,9 @@ class Program:
         """
         mul a b - Multiply the value of a by the value of b, then store the result in variable a.
         """
+        if b == 0:
+            cls.variables[a] = 0
+
         value_a = cls.variables[a]
 
         if b in cls.variables.keys():
@@ -133,21 +140,96 @@ def main():
         for instruction in f.readlines():
             program.append(instruction)
 
-        solution_found = False
-
         for model_number in range(99999999999999, 11111111111111, -1):
             inputs = [int(n) for n in list(str(model_number))]
             if 0 in inputs:
                 # print(f"found 0")
                 continue
+            if inputs[8] not in valid_digits[9]:
+                continue
+            if inputs[9] not in valid_digits[10]:
+                continue
+            if inputs[10] not in valid_digits[11]:
+                continue
+            if inputs[11] not in valid_digits[12]:
+                continue
+            if inputs[12] not in valid_digits[13]:
+                continue
+            if inputs[13] not in valid_digits[14]:
+                continue
             program.reset()
             result = program.run(inputs)
             if result["z"] == 0:
-                solution_found = True
                 print(f"Valid {model_number=}")
                 break
 
+            if not model_number % 11571211:
+                print(f"{model_number}")
         print(f"{program.variables=}")
+
+
+valid_digits = {
+    14: {1, 2, 3, 4, 5},
+    13: {1, 2, 3, 4, 5, 6, 7, 8},
+    12: {2, 3, 4, 5, 6, 7, 8, 9},
+    11: {1, 2, 3},
+    10: {8, 9, 7},
+    9: {5, 6, 7, 8, 9},
+    8: {1, 2, 3, 4, 5, 6, 7, 8, 9},
+    7: {1, 2, 3, 4, 5, 6, 7, 8, 9},
+    6: {1, 2, 3, 4, 5, 6, 7, 8, 9},
+    5: {1, 2, 3, 4, 5, 6, 7, 8, 9},
+    4: {1, 2, 3, 4, 5, 6, 7, 8, 9},
+    3: {1, 2, 3, 4, 5, 6, 7, 8, 9},
+    2: {1, 2, 3, 4, 5, 6, 7, 8, 9},
+    1: {1, 2, 3, 4, 5, 6, 7, 8, 9},
+}
+
+
+def test_digit(d, z_set):
+    print(f"Digit position {d}")
+    with open(f"data-digit{d}.txt") as f:
+        program = Program()
+        for instruction in f.readlines():
+            program.append(instruction)
+
+    result = {}
+    for digit in range(1, 10):
+        for z_in in z_set.keys():
+            program.reset()
+            run_result = program.run([z_in, digit])
+            # print(f"{z=}, {digit=}, {result=}")
+            if run_result["z"] in result:
+                result[run_result["z"]]["z_in"].add(z_in)
+                result[run_result["z"]]["digit"].add(digit)
+            else:
+                result[run_result["z"]] = {"z_in": set([z_in]), "digit": set([digit])}
+
+    return result
+
+
+def find_valid_digits():
+    results = {}
+    z = {0: 0}
+    for digit in range(1, 15):
+        z = test_digit(digit, z)
+        results[digit] = z
+        print(f"{len(z)}")
+
+    valid_zeds = [0]
+    for digit in range(14, 0, -1):
+        print(f"Checking valid results for {digit=}:")
+        digit_result = results[digit]
+        next_layer = set()
+        valid_digits = set()
+        for zed in valid_zeds:
+            if zed in digit_result:
+                # print(f"{digit_result[zed]=}")
+                next_layer.update(digit_result[zed]["z_in"])
+                valid_digits.update(digit_result[zed]["digit"])
+
+        valid_zeds = next_layer
+        print(f"Valid digits for position {digit} is {valid_digits=}")
 
 
 if __name__ == "__main__":

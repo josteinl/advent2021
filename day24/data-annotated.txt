@@ -1,0 +1,262 @@
+inp w # <--- DIGIT 1
+mul x 0 # NOP
+add x z # NOP
+mod x 26 # NOP
+div z 1 # NOP
+add x 12 # x=12
+eql x w # x = 0 Never true since w is always in [1-9]
+eql x 0 # x = 1
+mul y 0 # NOP
+add y 25 # y = 25
+mul y x # y = 25 * 1 = 25
+add y 1 # y = 25 + 1 = 26
+mul z y # NOP  z = 0 * 26 = 0
+mul y 0 # y = 0
+add y w # y = w = input 9
+add y 7 # y = y + 7 = 16
+mul y x # y = 16 * 1 = 16
+add z y # z = z + y = 0 + 16 = 16 (digit 1-9 gir z 8-16)
+inp w # <--- DIGIT 2
+mul x 0 # x = 0 <---
+add x z # x = 16
+mod x 26 # x = 16 % 26 = 16
+div z 1 # z = z / 1 = z = 16
+add x 13 # x = x + 13 = 26 + 13 = 29
+eql x w # x = x==w = 0
+eql x 0 # x = 1
+mul y 0 # y = 0 <---
+add y 25 # y = 25
+mul y x # u = 25 * 1 = 25
+add y 1 # y = 26
+mul z y #
+mul y 0 # <---
+add y w
+add y 8
+mul y x
+add z y
+inp w # <--- DIGIT 3
+mul x 0 # <--- x = 0
+add x z
+mod x 26
+div z 1
+add x 13
+eql x w
+eql x 0
+mul y 0 # <--- y = 0
+add y 25
+mul y x
+add y 1
+mul z y
+mul y 0
+add y w
+add y 10
+mul y x
+add z y
+inp w # <--- DIGIT 4
+mul x 0
+add x z
+mod x 26
+div z 26
+add x -2
+eql x w
+eql x 0
+mul y 0
+add y 25
+mul y x
+add y 1
+mul z y
+mul y 0
+add y w
+add y 4
+mul y x
+add z y
+inp w # <--- DIGIT 5
+mul x 0
+add x z
+mod x 26
+div z 26
+add x -10
+eql x w
+eql x 0
+mul y 0
+add y 25
+mul y x
+add y 1
+mul z y
+mul y 0
+add y w
+add y 4
+mul y x
+add z y
+inp w   # <-- DIGIT 6
+mul x 0
+add x z
+mod x 26
+div z 1
+add x 13
+eql x w
+eql x 0
+mul y 0
+add y 25
+mul y x
+add y 1
+mul z y
+mul y 0
+add y w
+add y 6
+mul y x
+add z y
+inp w # <-- DIGIT 7
+mul x 0
+add x z
+mod x 26
+div z 26
+add x -14
+eql x w
+eql x 0
+mul y 0
+add y 25
+mul y x
+add y 1
+mul z y
+mul y 0
+add y w
+add y 11
+mul y x
+add z y
+inp w # <-- DIGIT 8
+mul x 0
+add x z
+mod x 26
+div z 26
+add x -5
+eql x w
+eql x 0
+mul y 0
+add y 25
+mul y x
+add y 1
+mul z y
+mul y 0
+add y w
+add y 13
+mul y x
+add z y
+inp w # <-- DIGIT 9
+mul x 0
+add x z
+mod x 26
+div z 1
+add x 15
+eql x w
+eql x 0
+mul y 0
+add y 25
+mul y x
+add y 1
+mul z y
+mul y 0
+add y w
+add y 1
+mul y x
+add z y
+
+
+inp w # <-- DIGIT 10
+mul x 0
+add x z
+mod x 26
+div z 1
+add x 15
+eql x w
+eql x 0
+mul y 0
+add y 25
+mul y x
+add y 1
+mul z y
+mul y 0
+add y w
+add y 8
+mul y x
+add z y
+
+
+inp w # <-- DIGIT 11
+mul x 0
+add x z
+mod x 26
+div z 26
+add x -14
+eql x w
+eql x 0
+mul y 0
+add y 25
+mul y x
+add y 1
+mul z y
+mul y 0
+add y w
+add y 4
+mul y x
+add z y
+
+
+inp w # <-- DIGIT 12
+mul x 0
+add x z
+mod x 26
+div z 1
+add x 10
+eql x w
+eql x 0
+mul y 0
+add y 25
+mul y x
+add y 1
+mul z y
+mul y 0
+add y w
+add y 13
+mul y x
+add z y
+
+
+inp w # <-- DIGIT 13
+mul x 0
+add x z
+mod x 26
+div z 26
+add x -14
+eql x w
+eql x 0
+mul y 0
+add y 25
+mul y x
+add y 1
+mul z y
+mul y 0
+add y w
+add y 4
+mul y x
+add z y
+
+
+inp w # <-- DIGIT 14
+mul x 0 # x = 0
+add x z # x = z
+mod x 26
+div z 26
+add x -5
+eql x w
+eql x 0
+mul y 0 # y = 0
+add y 25
+mul y x
+add y 1
+mul z y
+mul y 0 # y = 0
+add y w # y = w = input
+add y 14 # y = input + 14
+mul y x # y = y * x
+add z y # Want z + y = 0
